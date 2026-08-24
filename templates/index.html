@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽卡模拟器 - Web版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        .core-stats {
+            margin-bottom: 20px;
+        }
+        .core-stats .stat-item {
+            margin-bottom: 10px;
+        }
+        .core-stats .stat-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">抽卡模拟器 - Web版</h1>
+        
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="user_num">总模拟用户数</label>
+                        <input type="number" class="form-control" id="user_num" name="user_num" value="13000" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="target_rarity">目标稀有度</label>
+                        <select class="form-control" id="target_rarity" name="target_rarity">
+                            <option value="UR">UR</option>
+                            <option value="SSR">SSR</option>
+                            <option value="SR">SR</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="second_ratio">继续抽第2张的用户占比</label>
+                        <input type="number" class="form-control" id="second_ratio" name="second_ratio" value="0" min="0" max="100" step="0.1">
+                        <small class="form-text text-muted">0-100之间的数值，例如：10表示10%</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="budget_dist">用户预算分布</label>
+                        <input type="text" class="form-control" id="budget_dist" name="budget_dist" placeholder="例如：3:0.334,60:0.666">
+                        <small class="form-text text-muted">格式：抽数:占比，逗号分隔，例如：3:0.334,60:0.666</small>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary mr-2">运行模拟</button>
+                        <button type="button" class="btn btn-success" onclick="exportExcel()">导出Excel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if results %}
+        <div class="result-section">
+            <h2 class="mb-3">{{ target_rarity }} 抽卡模拟结果</h2>
+            
+            <div class="core-stats">
+                <h3>核心指标</h3>
+                {% for key, value in core_stats.items() %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}:</span>
+                    <span>{{ value }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <h3>出货用户抽数分布</h3>
+            <div class="table-container">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>抽数</th>
+                            <th>出货人数</th>
+                            <th>占比</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.抽数 }}</td>
+                            <td>{{ result.出货人数 }}</td>
+                            <td>{{ result.占比 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <form id="exportForm" action="/export_excel" method="post" style="display: none;">
+        <input type="hidden" id="export_user_num" name="user_num">
+        <input type="hidden" id="export_target_rarity" name="target_rarity">
+        <input type="hidden" id="export_second_ratio" name="second_ratio">
+        <input type="hidden" id="export_budget_dist" name="budget_dist">
+    </form>
+    
+    <script>
+        function exportExcel() {
+            // 复制表单数据到导出表单
+            document.getElementById('export_user_num').value = document.getElementById('user_num').value;
+            document.getElementById('export_target_rarity').value = document.getElementById('target_rarity').value;
+            document.getElementById('export_second_ratio').value = document.getElementById('second_ratio').value;
+            document.getElementById('export_budget_dist').value = document.getElementById('budget_dist').value;
+            
+            // 提交导出表单
+            document.getElementById('exportForm').submit();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
