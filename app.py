@@ -37,7 +37,7 @@ def index():
             target_rarity=target_rarity,
         )
     
-    return render_template('index.html')
+    return render_template('full.html')
 
 @app.route('/export_excel', methods=['POST'])
 def export_excel():
