@@ -121,16 +121,16 @@
                 <!-- 功能选择标签页 -->
                 <ul class="nav nav-tabs" id="functionTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab">计算规则说明</button>
+                        <button class="nav-link active" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab">计算规则说明</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="real-user-tab" data-bs-toggle="tab" data-bs-target="#real-user" type="button" role="tab">真实用户行为模拟</button>
+                        <button class="nav-link" id="real-user-tab" style="display:none;" data-bs-toggle="tab" data-bs-target="#real-user" type="button" role="tab">真实用户行为模拟</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="single-draw-tab" data-bs-toggle="tab" data-bs-target="#single-draw" type="button" role="tab">单抽/批量抽</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="collection-tab" data-bs-toggle="tab" data-bs-target="#collection" type="button" role="tab">收集模拟</button>
+                        <button class="nav-link" id="collection-tab" style="display:none;" data-bs-toggle="tab" data-bs-target="#collection" type="button" role="tab">收集模拟</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab">高级配置</button>
@@ -139,7 +139,7 @@
                 
                 <div class="tab-content mt-4" id="functionTabsContent">
                     <!-- 计算规则说明 -->
-                    <div class="tab-pane fade" id="rules" role="tabpanel">
+                    <div class="tab-pane fade show active" id="rules" role="tabpanel">
                         <div class="card">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="mb-0">抽卡概率计算规则说明</h5>
@@ -254,7 +254,7 @@
                     </div>
                     
                     <!-- 真实用户行为模拟 -->
-                    <div class="tab-pane fade show active" id="real-user" role="tabpanel">
+                    <div class="tab-pane fade" id="real-user" role="tabpanel">
                         <form id="gachaForm">
                             <h5 class="mb-3">基础参数</h5>
                             <div class="row">
