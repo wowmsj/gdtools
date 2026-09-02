@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>万能战斗模拟器 | gdtools.tech</title>
+  <style>
+    :root { color-scheme: dark; --bg:#10151b; --panel:#18212a; --panel-2:#202b36; --line:#334352; --text:#edf2f7; --muted:#aab8c5; --accent:#66d1a8; --red:#ed7777; --blue:#79adf2; --warning:#f1c66d; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-width:320px; background:var(--bg); color:var(--text); font:14px/1.45 system-ui,-apple-system,"Microsoft YaHei",sans-serif; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .topbar { min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 24px; border-bottom:1px solid var(--line); background:#131a22; }
+    .brand { font-size:17px; font-weight:700; color:#fff; text-decoration:none; }
+    .brand span { color:var(--accent); }
+    .topbar a:not(.brand) { color:var(--muted); text-decoration:none; }
+    main { max-width:1440px; margin:0 auto; padding:24px; }
+    .page-title { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:20px; }
+    h1 { margin:0; font-size:26px; font-weight:700; letter-spacing:0; }
+    h2 { margin:0 0 14px; font-size:16px; }
+    .hint { color:var(--muted); margin:4px 0 0; }
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
+    .button { border:1px solid var(--line); border-radius:5px; padding:8px 12px; color:var(--text); background:var(--panel-2); }
+    .button:hover { border-color:#607589; }
+    .button.primary { background:var(--accent); border-color:var(--accent); color:#10201a; font-weight:700; }
+    .button.active { border-color:var(--accent); color:var(--accent); }
+    .layout { display:grid; grid-template-columns:minmax(500px, 1fr) minmax(390px, .8fr); gap:20px; align-items:start; }
+    .panel { border:1px solid var(--line); background:var(--panel); border-radius:6px; }
+    .panel-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--line); }
+    .panel-body { padding:16px; }
+    .duel-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .fighter { border:1px solid var(--line); border-radius:5px; padding:14px; background:#151d26; }
+    .fighter.red { border-top:3px solid var(--red); }
+    .fighter.blue { border-top:3px solid var(--blue); }
+    .fighter h2 { display:flex; justify-content:space-between; align-items:center; }
+    .skill-list { margin-top:16px; border-top:1px solid var(--line); padding-top:12px; }
+    .skill-list-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .skill-list-head h3 { margin:0; font-size:14px; }
+    .skill-card { border:1px solid var(--line); border-radius:4px; padding:10px; margin-top:8px; background:#111820; }
+    .skill-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+    .skill-card-head strong { font-size:13px; }
+    .skill-card .field-grid { gap:8px; }
+    .skill-card select { width:100%; margin-top:5px; padding:8px; border:1px solid var(--line); border-radius:4px; background:#10161d; color:var(--text); }
+    .effect-row { border-top:1px solid rgba(51,67,82,.6); padding-top:8px; margin-top:8px; }
+    .tag { font-size:12px; font-weight:600; padding:2px 7px; border-radius:3px; }
+    .red .tag { color:#361415; background:var(--red); } .blue .tag { color:#10253e; background:var(--blue); }
+    .field-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    label { display:block; color:var(--muted); font-size:12px; }
+    input { width:100%; margin-top:5px; padding:8px; border:1px solid var(--line); border-radius:4px; background:#10161d; color:var(--text); }
+    input:focus { outline:2px solid rgba(102,209,168,.35); border-color:var(--accent); }
+    .field-error { min-height:17px; display:block; margin-top:3px; color:#ff9d9d; font-size:12px; }
+    details { margin-top:14px; border-top:1px solid var(--line); padding-top:12px; }
+    summary { color:var(--muted); cursor:pointer; }
+    .run-area { display:flex; align-items:center; gap:12px; margin-top:18px; }
+    .run-state { color:var(--muted); }
+    .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .metric { padding:11px; background:#131b23; border-left:3px solid var(--line); }
+    .metric strong { display:block; margin-top:4px; font-size:18px; }
+    .metric.winner-red { border-color:var(--red); } .metric.winner-blue { border-color:var(--blue); } .metric.draw { border-color:var(--warning); }
+    .reason-list { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    .reason-list button { width:100%; text-align:left; display:flex; justify-content:space-between; gap:8px; padding:10px; border:1px solid var(--line); border-radius:4px; background:#151d26; color:var(--text); }
+    .reason-list button:hover { border-color:var(--accent); }
+    .empty { color:var(--muted); margin:0; }
+    .event-controls { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .event-table-wrap { max-height:380px; overflow:auto; border:1px solid var(--line); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { padding:8px; text-align:left; border-bottom:1px solid rgba(51,67,82,.6); white-space:nowrap; }
+    th { position:sticky; top:0; background:var(--panel-2); color:var(--muted); font-weight:600; }
+    tr.selected { background:rgba(102,209,168,.16); }
+    .event-type { font-weight:600; } .event-damage { color:#ff9d9d; } .event-heal { color:var(--accent); } .event-dot { color:var(--warning); }
+    #configErrors { margin:0 0 12px; padding-left:20px; color:#ffaeae; }
+    .hidden { display:none !important; }
+    @media (max-width:980px) { .layout { grid-template-columns:1fr; } }
+    @media (max-width:620px) { main { padding:16px; } .topbar { padding:0 16px; } .page-title { align-items:start; flex-direction:column; } .duel-grid { grid-template-columns:1fr; } .summary-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/"><span>gdtools</span>.tech</a><a href="/">抽卡模拟器</a></header>
+  <main>
+    <section class="page-title">
+      <div><h1>万能战斗模拟器</h1><p class="hint">从基础 1v1 开始，判断谁会赢、多久结束，以及决定胜负的事件。</p></div>
+      <div class="toolbar">
+        <label class="button" for="importFile">导入 JSON</label><input class="hidden" id="importFile" type="file" accept="application/json,.json">
+        <button class="button" id="exportButton" type="button">导出 JSON</button>
+      </div>
+    </section>
+    <div class="layout">
+      <section class="panel" aria-labelledby="configTitle">
+        <div class="panel-head"><h2 id="configTitle">角色与规则</h2><button class="button" id="resetButton" type="button">恢复基础模板</button></div>
+        <div class="panel-body">
+          <ul class="hidden" id="configErrors" aria-live="polite"></ul>
+          <div class="duel-grid">
+            <fieldset class="fighter red"><h2>红方 <span class="tag">角色 A</span></h2><div class="field-grid" data-side="red"></div><section class="skill-list" data-skills-side="red"></section></fieldset>
+            <fieldset class="fighter blue"><h2>蓝方 <span class="tag">角色 B</span></h2><div class="field-grid" data-side="blue"></div><section class="skill-list" data-skills-side="blue"></section></fieldset>
+          </div>
+          <details><summary>高级规则</summary><div class="field-grid" id="ruleFields"></div></details>
+          <div class="run-area"><button class="button primary" id="runButton" type="button">运行模拟</button><span class="run-state" id="runState">等待运行</span></div>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="resultTitle">
+        <div class="panel-head"><h2 id="resultTitle">本局结论</h2></div>
+        <div class="panel-body">
+          <div class="summary-grid" id="summary"><p class="empty">运行模拟后显示结果。</p></div>
+          <h2 style="margin-top:20px">胜负原因</h2><ul class="reason-list" id="reasons"><li class="empty">暂无归因。</li></ul>
+        </div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:20px" aria-labelledby="eventsTitle">
+      <div class="panel-head"><h2 id="eventsTitle">关键事件</h2></div>
+      <div class="panel-body">
+        <div class="event-controls" id="eventFilters"><button class="button active" data-filter="all" type="button">全部</button><button class="button" data-filter="damage" type="button">伤害</button><button class="button" data-filter="heal" type="button">治疗</button><button class="button" data-filter="status" type="button">状态</button></div>
+        <div class="event-table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>来源</th><th>目标</th><th>数值</th><th>事件</th></tr></thead><tbody id="eventBody"><tr><td colspan="6" class="empty">暂无事件。</td></tr></tbody></table></div>
+      </div>
+    </section>
+  </main>
+  <script src="/battle/core.js"></script>
+  <script src="/battle/presets.js"></script>
+  <script>
+    const { ConfigError, migrateConfig, runBattle, validateConfig } = window.BattleCore;
+    const { createBasicDuelPreset } = window.BattlePresets;
+
+    const characterFields = [
+      ['name', '名称', 'text'], ['hp', '当前生命', 'number'], ['maxHp', '最大生命', 'number'],
+      ['atk', '攻击力', 'number'], ['def', '防御力', 'number'], ['attackInterval', '攻击间隔（秒）', 'number'],
+    ];
+    const ruleFields = [['timeStep', '时间步（秒）'], ['maxTime', '最大时长（秒）'], ['seed', '随机种子']];
+    let config = createBasicDuelPreset();
+    let lastResult = null;
+    let activeFilter = 'all';
+    let selectedEventIndexes = new Set();
+
+    function fieldId(path) { return `field-${path.replaceAll('.', '-')}`; }
+    function addField(container, path, labelText, type) {
+      const label = document.createElement('label');
+      label.htmlFor = fieldId(path); label.textContent = labelText;
+      const input = document.createElement('input');
+      input.id = fieldId(path); input.dataset.path = path; input.type = type;
+      if (type === 'number') input.step = 'any';
+      const error = document.createElement('span');
+      error.className = 'field-error'; error.dataset.errorFor = path;
+      label.append(input, error); container.append(label);
+    }
+    function buildForm() {
+      for (const side of ['red', 'blue']) {
+        const container = document.querySelector(`[data-side="${side}"]`);
+        characterFields.forEach(([key, label, type]) => addField(container, `characters.${side}.${key === 'name' ? 'name' : `attributes.${key}`}`, label, type));
+      }
+      const rules = document.querySelector('#ruleFields');
+      ruleFields.forEach(([key, label]) => addField(rules, `rules.${key}`, label, 'number'));
+    }
+    function getPath(object, path) { return path.split('.').reduce((value, key) => value?.[key], object); }
+    function setPath(object, path, value) { const keys = path.split('.'); const finalKey = keys.pop(); const parent = keys.reduce((value, key) => value[key], object); parent[finalKey] = value; }
+    function renderForm() {
+      config = migrateConfig(config);
+      document.querySelectorAll('[data-path]').forEach(input => { input.value = getPath(config, input.dataset.path) ?? ''; });
+      renderSkills();
+      showErrors([]);
+    }
+    function readForm() {
+      const next = structuredClone(config);
+      document.querySelectorAll('[data-path]').forEach(input => setPath(next, input.dataset.path, input.type === 'number' ? Number(input.value) : input.value.trim()));
+      return next;
+    }
+    function skillId() { return `skill-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
+    function newEffect(type = 'damage') {
+      return type === 'heal' ? { type, formula: 'self.atk * 1', editor: { mode: 'simple', scale: 1 } } : type === 'dot' ? { type, formula: 'self.atk * 0.2', interval: 1, ticks: 3, editor: { mode: 'simple', scale: 0.2 } } : type === 'modifier' ? { type, attribute: 'atk', formula: '10', editor: { mode: 'simple', value: 10 } } : { type: 'damage', formula: 'max(1, self.atk * 1 - target.def * 0)', editor: { mode: 'simple', attackScale: 1, defenseScale: 0, minimum: 1 } };
+    }
+    function renderSkills() {
+      for (const side of ['red', 'blue']) {
+        const container = document.querySelector(`[data-skills-side="${side}"]`); container.replaceChildren();
+        const header = document.createElement('div'); header.className = 'skill-list-head'; const title = document.createElement('h3'); title.textContent = '技能'; const add = document.createElement('button'); add.className = 'button'; add.type = 'button'; add.textContent = '添加技能'; add.dataset.action = 'add-skill'; add.dataset.side = side; header.append(title, add); container.append(header);
+        config.characters[side].skills.forEach((id, index) => { const skill = config.skills[id]; if (skill) container.append(createSkillCard(side, id, skill, index === 0)); });
+      }
+    }
+    function createSkillCard(side, id, skill, basic) {
+      const card = document.createElement('article'); card.className = 'skill-card'; card.dataset.skillId = id; card.dataset.side = side;
+      const head = document.createElement('div'); head.className = 'skill-card-head'; const title = document.createElement('strong'); title.textContent = basic ? '普攻（固定）' : '自定义技能'; head.append(title);
+      if (!basic) { const remove = document.createElement('button'); remove.className = 'button'; remove.type = 'button'; remove.textContent = '删除技能'; remove.dataset.action = 'remove-skill'; remove.dataset.skillId = id; remove.dataset.side = side; head.append(remove); }
+      card.append(head);
+      const grid = document.createElement('div'); grid.className = 'field-grid';
+      const name = document.createElement('label'); name.textContent = '技能名称'; const nameInput = document.createElement('input'); nameInput.value = skill.name ?? ''; nameInput.dataset.skillField = 'name'; name.append(nameInput); grid.append(name);
+      const trigger = document.createElement('label'); trigger.textContent = '触发方式'; const select = document.createElement('select'); select.dataset.skillField = 'trigger'; select.disabled = basic; [['attack', '随攻击间隔'], ['interval', '每 N 秒']].forEach(([value, text]) => { const option = document.createElement('option'); option.value = value; option.textContent = text; option.selected = (skill.trigger?.type ?? 'attack') === value; select.append(option); }); trigger.append(select); grid.append(trigger);
+      const seconds = document.createElement('label'); seconds.textContent = '触发秒数'; const secondsInput = document.createElement('input'); secondsInput.type = 'number'; secondsInput.step = 'any'; secondsInput.value = skill.trigger?.seconds ?? 5; secondsInput.dataset.skillField = 'seconds'; seconds.hidden = basic || skill.trigger?.type !== 'interval'; seconds.append(secondsInput); grid.append(seconds); card.append(grid);
+      skill.effects.forEach((effect, effectIndex) => card.append(createEffectCard(id, effect, effectIndex, basic)));
+      const addEffect = document.createElement('button'); addEffect.className = 'button'; addEffect.type = 'button'; addEffect.textContent = '添加效果'; addEffect.dataset.action = 'add-effect'; addEffect.dataset.skillId = id; card.append(addEffect);
+      return card;
+    }
+    function createEffectCard(id, effect, index, basic) {
+      const row = document.createElement('div'); row.className = 'effect-row'; row.dataset.effectIndex = index;
+      const grid = document.createElement('div'); grid.className = 'field-grid'; const typeLabel = document.createElement('label'); typeLabel.textContent = `效果 ${index + 1}`; const select = document.createElement('select'); select.dataset.effectField = 'type'; [['damage','伤害'],['heal','治疗'],['dot','持续伤害'],['modifier','属性修正']].forEach(([value,text]) => { const option = document.createElement('option'); option.value=value; option.textContent=text; option.selected=value===effect.type; select.append(option); }); typeLabel.append(select); grid.append(typeLabel);
+      const editor = effect.editor || {};
+      if (effect.type === 'damage') [['attackScale','攻击倍率',1],['defenseScale','防御倍率',0],['minimum','最小伤害',1]].forEach(([key,label,def]) => addEffectNumber(grid,key,label,editor[key] ?? def));
+      if (effect.type === 'heal' || effect.type === 'dot') addEffectNumber(grid,'scale','攻击倍率',editor.scale ?? 1);
+      if (effect.type === 'modifier') addEffectNumber(grid,'value','修正数值',editor.value ?? 10);
+      row.append(grid);
+      const advanced = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = '高级公式'; const formula = document.createElement('input'); formula.value = effect.formula ?? ''; formula.dataset.effectField = 'formula'; advanced.append(summary, formula); row.append(advanced);
+      if (effect.type === 'dot') { const dotGrid = document.createElement('div'); dotGrid.className = 'field-grid'; [['interval','每跳间隔'],['ticks','跳数']].forEach(([key,label]) => { const field=document.createElement('label'); field.textContent=label; const input=document.createElement('input'); input.type='number'; input.step='any'; input.value=effect[key] ?? (key==='interval'?1:3); input.dataset.effectField=key; field.append(input); dotGrid.append(field); }); row.append(dotGrid); }
+      if (effect.type === 'modifier') { const field=document.createElement('label'); field.textContent='属性'; const input=document.createElement('input'); input.value=effect.attribute ?? 'atk'; input.dataset.effectField='attribute'; row.append(field); field.append(input); }
+      if (!basic || index > 0) { const remove=document.createElement('button'); remove.className='button'; remove.type='button'; remove.textContent='删除效果'; remove.dataset.action='remove-effect'; remove.dataset.skillId=id; remove.dataset.effectIndex=index; row.append(remove); }
+      return row;
+    }
+    function addEffectNumber(grid, key, labelText, value) { const label = document.createElement('label'); label.textContent = labelText; const input = document.createElement('input'); input.type = 'number'; input.step = 'any'; input.value = value; input.dataset.effectField = key; label.append(input); grid.append(label); }
+    function applySimpleEffect(effect, field, value) {
+      effect.editor = { ...(effect.editor || {}), mode: 'simple', [field]: value };
+      if (effect.type === 'damage') effect.formula = `max(${effect.editor.minimum ?? 1}, self.atk * ${effect.editor.attackScale ?? 1} - target.def * ${effect.editor.defenseScale ?? 0})`;
+      if (effect.type === 'heal' || effect.type === 'dot') effect.formula = `self.atk * ${effect.editor.scale ?? 1}`;
+      if (effect.type === 'modifier') effect.formula = String(effect.editor.value ?? 10);
+    }
+    function updateSkillFromCard(card, target) {
+      const skill = config.skills[card.dataset.skillId]; if (!skill) return; const field = target.dataset.skillField;
+      if (field === 'name') skill.name = target.value;
+      if (field === 'trigger') { skill.trigger = target.value === 'interval' ? { type: 'interval', seconds: Number(card.querySelector('[data-skill-field="seconds"]').value) || 5 } : { type: 'attack' }; renderSkills(); return; }
+      if (field === 'seconds') skill.trigger.seconds = Number(target.value);
+      const effectRow = target.closest('[data-effect-index]'); if (!effectRow) return; const effect = skill.effects[Number(effectRow.dataset.effectIndex)]; const effectField = target.dataset.effectField;
+      if (effectField === 'type') { skill.effects[Number(effectRow.dataset.effectIndex)] = newEffect(target.value); renderSkills(); return; }
+      if (effectField === 'formula') { effect.formula = target.value; effect.editor = { ...(effect.editor || {}), mode: target.value ? 'formula' : 'simple' }; return; }
+      if (effectField === 'interval' || effectField === 'ticks' || effectField === 'attribute') effect[effectField] = effectField === 'attribute' ? target.value : Number(target.value);
+      if (['attackScale','defenseScale','minimum','scale','value'].includes(effectField)) applySimpleEffect(effect, effectField, Number(target.value));
+    }
+    function showErrors(errors) {
+      document.querySelectorAll('[data-error-for]').forEach(node => { node.textContent = ''; });
+      const list = document.querySelector('#configErrors'); list.replaceChildren();
+      errors.forEach(error => {
+        const fieldError = document.querySelector(`[data-error-for="${error.path}"]`);
+        if (fieldError) fieldError.textContent = error.message;
+        else { const item = document.createElement('li'); item.textContent = `${error.path || '配置'}：${error.message}`; list.append(item); }
+      });
+      list.classList.toggle('hidden', list.childElementCount === 0);
+    }
+    function renderSummary(result) {
+      const summary = document.querySelector('#summary'); summary.replaceChildren();
+      const names = { red: result.config.characters.red.name, blue: result.config.characters.blue.name, draw: '平局', timeout: '超时' };
+      const winner = names[result.summary.outcome];
+      const metrics = [['结果', winner], ['结束时间', `${result.summary.endTime.toFixed(1)} 秒`], ['剩余生命', `红 ${result.summary.remainingHp.red.toFixed(0)} / 蓝 ${result.summary.remainingHp.blue.toFixed(0)}`]];
+      metrics.forEach(([label, value], index) => { const block = document.createElement('div'); block.className = `metric ${index === 0 ? `winner-${result.summary.outcome}` : ''}`; const title = document.createElement('span'); title.textContent = label; const strong = document.createElement('strong'); strong.textContent = value; block.append(title, strong); summary.append(block); });
+      const reasons = document.querySelector('#reasons'); reasons.replaceChildren();
+      if (!result.summary.reasons.length) { const item = document.createElement('li'); item.className = 'empty'; item.textContent = '本局没有可归因的数值事件。'; reasons.append(item); return; }
+      result.summary.reasons.forEach(reason => { const item = document.createElement('li'); const button = document.createElement('button'); button.type = 'button'; const label = document.createElement('span'); label.textContent = reason.label; const value = document.createElement('span'); value.textContent = `贡献 ${reason.value}`; button.append(label, value); button.addEventListener('click', () => { selectedEventIndexes = new Set(reason.eventIndexes); renderEvents(); document.querySelector('#eventsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }); }); item.append(button); reasons.append(item); });
+    }
+    function matchesFilter(event) { return activeFilter === 'all' || (activeFilter === 'damage' && ['damage', 'dot'].includes(event.type)) || (activeFilter === 'heal' && event.type === 'heal') || (activeFilter === 'status' && ['modifier', 'defeat'].includes(event.type)); }
+    function eventName(type) { return { attack:'攻击', damage:'伤害', heal:'治疗', modifier:'属性修正', dot:'持续伤害', defeat:'击败' }[type] ?? type; }
+    function renderEvents() {
+      const body = document.querySelector('#eventBody'); body.replaceChildren();
+      const events = lastResult?.events ?? [];
+      let count = 0;
+      events.forEach((event, index) => {
+        if (!matchesFilter(event)) return; count += 1;
+        const row = document.createElement('tr'); if (selectedEventIndexes.has(index)) row.className = 'selected';
+        const values = [event.time.toFixed(1), eventName(event.type), lastResult.config.characters[event.source]?.name ?? '-', lastResult.config.characters[event.target]?.name ?? '-', event.amount === undefined ? '-' : event.amount.toFixed(2), event.detail];
+        values.forEach((value, column) => { const cell = document.createElement('td'); cell.textContent = value; if (column === 1) cell.className = `event-type event-${event.type}`; row.append(cell); }); body.append(row);
+      });
+      if (!count) { const row = document.createElement('tr'); const cell = document.createElement('td'); cell.colSpan = 6; cell.className = 'empty'; cell.textContent = '当前筛选没有事件。'; row.append(cell); body.append(row); }
+    }
+    function run() {
+      const next = readForm(); const validation = validateConfig(next); showErrors(validation.errors);
+      if (!validation.valid) { document.querySelector('#runState').textContent = '请先修正配置错误'; return; }
+      config = next;
+      try { lastResult = runBattle(config); selectedEventIndexes = new Set(); renderSummary(lastResult); renderEvents(); document.querySelector('#runState').textContent = `已完成，使用种子 ${lastResult.seed}`; }
+      catch (error) { showErrors(error instanceof ConfigError ? error.errors : [{ path: '', message: error.message }]); document.querySelector('#runState').textContent = '运行失败'; }
+    }
+    function exportConfig() { const blob = new Blob([JSON.stringify(migrateConfig(readForm()), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'battle-config.json'; link.click(); URL.revokeObjectURL(url); }
+    async function importConfig(file) { try { const parsed = JSON.parse(await file.text()); const validation = validateConfig(parsed); showErrors(validation.errors); if (!validation.valid) return; config = migrateConfig(parsed); lastResult = null; selectedEventIndexes = new Set(); renderForm(); document.querySelector('#runState').textContent = '已导入配置，等待运行'; } catch (error) { showErrors([{ path: '导入文件', message: `无法读取 JSON：${error.message}` }]); } }
+
+    buildForm(); renderForm();
+    document.querySelector('#runButton').addEventListener('click', run);
+    document.querySelector('#resetButton').addEventListener('click', () => { config = createBasicDuelPreset(); lastResult = null; selectedEventIndexes = new Set(); renderForm(); document.querySelector('#runState').textContent = '已恢复基础模板'; });
+    document.querySelector('#exportButton').addEventListener('click', exportConfig);
+    document.querySelector('#importFile').addEventListener('change', event => { if (event.target.files[0]) importConfig(event.target.files[0]); event.target.value = ''; });
+    document.querySelector('.duel-grid').addEventListener('input', event => { const card = event.target.closest('[data-skill-id]'); if (card) updateSkillFromCard(card, event.target); });
+    document.querySelector('.duel-grid').addEventListener('change', event => { const card = event.target.closest('[data-skill-id]'); if (card) updateSkillFromCard(card, event.target); });
+    document.querySelector('.duel-grid').addEventListener('click', event => {
+      const button = event.target.closest('[data-action]'); if (!button) return; const side = button.dataset.side; const id = button.dataset.skillId;
+      if (button.dataset.action === 'add-skill') { const newId = skillId(); config.skills[newId] = { name: '新技能', trigger: { type: 'interval', seconds: 5 }, effects: [newEffect()] }; config.characters[side].skills.push(newId); renderSkills(); }
+      if (button.dataset.action === 'remove-skill') { config.characters[side].skills = config.characters[side].skills.filter(skillIdValue => skillIdValue !== id); delete config.skills[id]; renderSkills(); }
+      if (button.dataset.action === 'add-effect') { config.skills[id].effects.push(newEffect()); renderSkills(); }
+      if (button.dataset.action === 'remove-effect') { const effectIndex = Number(button.dataset.effectIndex); if (config.skills[id].effects.length > 1) config.skills[id].effects.splice(effectIndex, 1); renderSkills(); }
+    });
+    document.querySelector('#eventFilters').addEventListener('click', event => { const button = event.target.closest('[data-filter]'); if (!button) return; activeFilter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(item => item.classList.toggle('active', item === button)); renderEvents(); });
+  </script>
+</body>
+</html>

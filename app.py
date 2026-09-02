@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, send_from_directory
 from 祈愿抽卡2 import GachaSimulator
 from web_helpers import build_core_stats, build_distribution_rows, build_excel_file
 
@@ -59,6 +59,17 @@ def export_excel():
         as_attachment=True,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
+
+
+@app.route('/battle')
+@app.route('/battle/')
+def battle():
+    return send_from_directory('battle', 'battle.html')
+
+
+@app.route('/battle/<path:filename>')
+def battle_asset(filename):
+    return send_from_directory('battle', filename)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
