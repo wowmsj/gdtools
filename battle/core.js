@@ -92,6 +92,18 @@ function validateConfig(config) {
     if (!Array.isArray(character.skills) || character.skills.length === 0) addError(`${path}.skills`, '至少需要一个技能');
   }
 
+  if (!config.formulas || typeof config.formulas !== 'object' || Array.isArray(config.formulas)) {
+    addError('formulas', '公式库必须是对象');
+  } else {
+    for (const [formulaId, formula] of Object.entries(config.formulas)) {
+      const path = `formulas.${formulaId}`;
+      if (!ID_PATTERN.test(formulaId)) addError(path, '公式 ID 必须以字母开头，且只能包含字母、数字和下划线');
+      if (typeof formula?.name !== 'string' || !formula.name.trim()) addError(`${path}.name`, '公式名称不能为空');
+      if (typeof formula?.expression !== 'string' || !formula.expression.trim()) addError(`${path}.expression`, '公式不能为空');
+      else validateFormula(formula.expression, `${path}.expression`, addError);
+    }
+  }
+
   if (!config.skills || typeof config.skills !== 'object') {
     addError('skills', '缺少技能定义');
   } else {
@@ -109,16 +121,14 @@ function validateConfig(config) {
       for (const [index, effect] of skill.effects.entries()) {
         const effectPath = `${path}.effects.${index}`;
         if (!EFFECT_TYPES.has(effect?.type)) addError(`${effectPath}.type`, '不支持的效果类型');
-        if (typeof effect?.formula !== 'string' || !effect.formula.trim()) {
+        if (effect?.formulaId !== undefined) {
+          if (typeof effect.formulaId !== 'string' || !effect.formulaId.trim() || !config.formulas?.[effect.formulaId]) {
+            addError(`${effectPath}.formulaId`, `公式 ${effect.formulaId || '(空)'} 不存在`);
+          }
+        } else if (typeof effect?.formula !== 'string' || !effect.formula.trim()) {
           addError(`${effectPath}.formula`, '效果公式不能为空');
         } else {
-          try {
-            evaluateExpression(effect.formula, { self: {}, target: {}, context: {}, random: () => 0.5 });
-          } catch (error) {
-            if (!(error instanceof ExpressionError) || !/属性不存在/.test(error.message)) {
-              addError(`${effectPath}.formula`, error.message);
-            }
-          }
+          validateFormula(effect.formula, `${effectPath}.formula`, addError);
         }
         if (effect?.type === 'dot') {
           if (!Number.isFinite(effect.interval) || effect.interval <= 0) addError(`${effectPath}.interval`, '持续伤害间隔必须大于 0');
@@ -152,6 +162,18 @@ function migrateConfig(config) {
   return migrated;
 }
 
+function validateFormula(expression, path, addError) {
+  try {
+    evaluateExpression(expression, { self: {}, target: {}, context: {}, random: () => 0.5 });
+  } catch (error) {
+    if (!(error instanceof ExpressionError) || !/属性不存在/.test(error.message)) addError(path, error.message);
+  }
+}
+
+function resolveEffectFormula(effect, config) {
+  return effect.formulaId === undefined ? effect.formula : config.formulas[effect.formulaId].expression;
+}
+
 function evaluateExpression(source, scope) {
   const parser = new ExpressionParser(tokenize(source), scope ?? {});
   const result = parser.parse();
@@ -173,7 +195,7 @@ function runBattle(config) {
 
   const schedule = (event) => {
     queue.push({ ...event, order: sequence++ });
-    queue.sort((left, right) => left.time - right.time || left.source.localeCompare(right.source) || left.order - right.order);
+    queue.sort((left, right) => left.time - right.time || sideOrder(left.source) - sideOrder(right.source) || left.order - right.order);
   };
 
   for (const side of ['red', 'blue']) {
@@ -279,7 +301,7 @@ function resolveDot(event, state, config, random, events, schedule) {
 function resolveEffect(effect, event, state, config, random, events, schedule) {
   const source = state[event.source];
   const target = state[event.target];
-  const amount = evaluateExpression(effect.formula, {
+  const amount = evaluateExpression(resolveEffectFormula(effect, config), {
     self: effectiveAttributes(source),
     target: effectiveAttributes(target),
     context: { time: event.time },
@@ -313,7 +335,7 @@ function resolveEffect(effect, event, state, config, random, events, schedule) {
       type: 'dot',
       source: event.source,
       target: event.target,
-      formula: effect.formula,
+      formula: resolveEffectFormula(effect, config),
       interval,
       remainingTicks: ticks,
     });
@@ -341,6 +363,10 @@ function formatNumber(value) {
 
 function opponentOf(side) {
   return side === 'red' ? 'blue' : 'red';
+}
+
+function sideOrder(side) {
+  return side === 'red' ? 0 : 1;
 }
 
 function buildReasons(events, config) {

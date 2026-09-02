@@ -41,6 +41,27 @@ assert.deepEqual(validateConfig(duplicateAttribute).errors, [
   { path: 'attributes.5.id', message: '属性 ID atk 重复' },
 ]);
 
+const reusable = createBasicDuelPreset();
+reusable.formulas.squareDamage = { name: '平方伤害', expression: 'self.atk ^ 2 / target.def ^ 2' };
+reusable.skills.sharedStrike = {
+  name: '重击', trigger: { type: 'attack' }, effects: [{ type: 'damage', formulaId: 'squareDamage' }],
+};
+reusable.characters.red.skills = ['sharedStrike'];
+reusable.characters.blue.skills = ['sharedStrike'];
+reusable.characters.red.attributes = { hp: 100, maxHp: 100, atk: 20, def: 2, attackInterval: 1 };
+reusable.characters.blue.attributes = { hp: 100, maxHp: 100, atk: 10, def: 5, attackInterval: 1 };
+assert.deepEqual(
+  runBattle(reusable).events.filter(event => event.type === 'damage').slice(0, 2).map(event => [event.source, event.amount]),
+  [['red', 16], ['blue', 25]],
+  '共享技能必须按每个角色自己的属性计算',
+);
+
+const missingFormula = createBasicDuelPreset();
+missingFormula.skills['basic-red'].effects[0] = { type: 'damage', formulaId: 'missing' };
+assert.deepEqual(validateConfig(missingFormula).errors, [
+  { path: 'skills.basic-red.effects.0.formulaId', message: '公式 missing 不存在' },
+]);
+
 const invalidInterval = createBasicDuelPreset();
 invalidInterval.skills['basic-red'].trigger = { type: 'interval', seconds: 0 };
 assert.deepEqual(validateConfig(invalidInterval).errors, [
