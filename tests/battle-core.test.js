@@ -29,6 +29,18 @@ delete legacy.skills['basic-red'].trigger;
 assert.deepEqual(migrateConfig(legacy).skills['basic-red'].trigger, { type: 'attack' });
 assert.equal(validateConfig(legacy).valid, true);
 
+const migratedLegacy = createBasicDuelPreset();
+migratedLegacy.version = 1;
+delete migratedLegacy.attributes[0].defaultValue;
+assert.equal(migrateConfig(migratedLegacy).version, 2);
+assert.equal(migrateConfig(migratedLegacy).attributes[0].defaultValue, 0);
+
+const duplicateAttribute = createBasicDuelPreset();
+duplicateAttribute.attributes.push({ id: 'atk', name: '重复攻击', type: 'number', defaultValue: 0 });
+assert.deepEqual(validateConfig(duplicateAttribute).errors, [
+  { path: 'attributes.5.id', message: '属性 ID atk 重复' },
+]);
+
 const invalidInterval = createBasicDuelPreset();
 invalidInterval.skills['basic-red'].trigger = { type: 'interval', seconds: 0 };
 assert.deepEqual(validateConfig(invalidInterval).errors, [

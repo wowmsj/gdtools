@@ -6,11 +6,11 @@ function createBasicDuelPreset() {
     version: CONFIG_VERSION,
     rules: { timeStep: 0.1, maxTime: 60, seed: 20260901 },
     attributes: [
-      { id: 'hp', name: '生命值', type: 'number' },
-      { id: 'maxHp', name: '最大生命值', type: 'number' },
-      { id: 'atk', name: '攻击力', type: 'number' },
-      { id: 'def', name: '防御力', type: 'number' },
-      { id: 'attackInterval', name: '攻击间隔', type: 'number' },
+      { id: 'hp', name: '生命值', type: 'number', defaultValue: 100 },
+      { id: 'maxHp', name: '最大生命值', type: 'number', defaultValue: 100 },
+      { id: 'atk', name: '攻击力', type: 'number', defaultValue: 10 },
+      { id: 'def', name: '防御力', type: 'number', defaultValue: 0 },
+      { id: 'attackInterval', name: '攻击间隔', type: 'number', defaultValue: 1 },
     ],
     formulas: {},
     characters: {

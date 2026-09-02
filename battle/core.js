@@ -1,5 +1,5 @@
 (() => {
-const CONFIG_VERSION = 1;
+const CONFIG_VERSION = 2;
 
 class ConfigError extends Error {
   constructor(errors) {
@@ -18,6 +18,8 @@ class ExpressionError extends Error {
 
 const EFFECT_TYPES = new Set(['damage', 'heal', 'modifier', 'dot']);
 const ROOT_NAMES = new Set(['self', 'target', 'context']);
+const SYSTEM_ATTRIBUTE_IDS = new Set(['hp', 'maxHp', 'attackInterval']);
+const ID_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
 
 function createSeededRandom(seed) {
   let state = Number(seed) >>> 0;
@@ -51,6 +53,22 @@ function validateConfig(config) {
     if (!Number.isInteger(rules.seed)) addError('rules.seed', '随机种子必须是整数');
   }
 
+  const attributeIds = new Set();
+  if (!Array.isArray(config.attributes)) {
+    addError('attributes', '缺少属性定义');
+  } else {
+    config.attributes.forEach((attribute, index) => {
+      const path = `attributes.${index}`;
+      if (!ID_PATTERN.test(attribute?.id ?? '')) addError(`${path}.id`, '属性 ID 必须以字母开头，且只能包含字母、数字和下划线');
+      else if (attributeIds.has(attribute.id)) addError(`${path}.id`, `属性 ID ${attribute.id} 重复`);
+      else attributeIds.add(attribute.id);
+      if (typeof attribute?.name !== 'string' || !attribute.name.trim()) addError(`${path}.name`, '属性名称不能为空');
+      if (attribute?.type !== 'number') addError(`${path}.type`, '目前只支持数值属性');
+      if (!finite(attribute?.defaultValue)) addError(`${path}.defaultValue`, '默认值必须是有限数字');
+    });
+    for (const id of SYSTEM_ATTRIBUTE_IDS) if (!attributeIds.has(id)) addError('attributes', `缺少系统属性 ${id}`);
+  }
+
   for (const side of ['red', 'blue']) {
     const character = config.characters?.[side];
     const path = `characters.${side}`;
@@ -63,7 +81,7 @@ function validateConfig(config) {
       addError(`${path}.attributes`, '缺少角色属性');
       continue;
     }
-    for (const name of ['hp', 'maxHp', 'atk', 'def', 'attackInterval']) {
+    for (const name of attributeIds) {
       if (!finite(attributes[name])) addError(`${path}.attributes.${name}`, `${name} 必须是有限数字`);
     }
     if (finite(attributes.hp) && attributes.hp <= 0) addError(`${path}.attributes.hp`, '生命值必须大于 0');
@@ -125,7 +143,11 @@ function validateConfig(config) {
 }
 
 function migrateConfig(config) {
+  if (!config || typeof config !== 'object') return config;
   const migrated = structuredClone(config);
+  if (migrated.version === 1) migrated.version = CONFIG_VERSION;
+  for (const attribute of migrated.attributes ?? []) attribute.defaultValue ??= 0;
+  migrated.formulas ??= {};
   for (const skill of Object.values(migrated?.skills ?? {})) skill.trigger ??= { type: 'attack' };
   return migrated;
 }
