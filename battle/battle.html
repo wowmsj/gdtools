@@ -192,10 +192,10 @@
       if (effect.type === 'damage') [['attackScale','攻击倍率',1],['defenseScale','防御倍率',0],['minimum','最小伤害',1]].forEach(([key,label,def]) => addEffectNumber(grid,key,label,editor[key] ?? def));
       if (effect.type === 'heal' || effect.type === 'dot') addEffectNumber(grid,'scale','攻击倍率',editor.scale ?? 1);
       if (effect.type === 'modifier') addEffectNumber(grid,'value','修正数值',editor.value ?? 10);
+      if (effect.type === 'modifier') { const field = document.createElement('label'); field.textContent = '属性'; const input = document.createElement('input'); input.value = effect.attribute ?? 'atk'; input.dataset.effectField = 'attribute'; field.append(input); grid.append(field); }
       row.append(grid);
       const advanced = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = '高级公式'; const formula = document.createElement('input'); formula.value = effect.formula ?? ''; formula.dataset.effectField = 'formula'; advanced.append(summary, formula); row.append(advanced);
       if (effect.type === 'dot') { const dotGrid = document.createElement('div'); dotGrid.className = 'field-grid'; [['interval','每跳间隔'],['ticks','跳数']].forEach(([key,label]) => { const field=document.createElement('label'); field.textContent=label; const input=document.createElement('input'); input.type='number'; input.step='any'; input.value=effect[key] ?? (key==='interval'?1:3); input.dataset.effectField=key; field.append(input); dotGrid.append(field); }); row.append(dotGrid); }
-      if (effect.type === 'modifier') { const field=document.createElement('label'); field.textContent='属性'; const input=document.createElement('input'); input.value=effect.attribute ?? 'atk'; input.dataset.effectField='attribute'; row.append(field); field.append(input); }
       if (!basic || index > 0) { const remove=document.createElement('button'); remove.className='button'; remove.type='button'; remove.textContent='删除效果'; remove.dataset.action='remove-effect'; remove.dataset.skillId=id; remove.dataset.effectIndex=index; row.append(remove); }
       return row;
     }
