@@ -96,6 +96,7 @@
       <div><h1>万能战斗模拟器</h1><p class="hint">从基础 1v1 开始，判断谁会赢、多久结束，以及决定胜负的事件。</p></div>
       <div class="toolbar">
         <label class="button" for="importFile">导入 JSON</label><input class="hidden" id="importFile" type="file" accept="application/json,.json">
+        <button class="button" id="saveButton" type="button">保存配置</button>
         <button class="button" id="exportButton" type="button">导出 JSON</button>
       </div>
     </section>
@@ -132,16 +133,19 @@
   </main>
   <script src="/battle/core.js"></script>
   <script src="/battle/presets.js"></script>
+  <script src="/battle/config-storage.js"></script>
   <script>
     const { ConfigError, migrateConfig, runBattle, validateConfig } = window.BattleCore;
     const { createBasicDuelPreset } = window.BattlePresets;
+    const { loadBattleConfig, saveBattleConfig } = window.BattleConfigStorage;
 
     const characterFields = [
       ['name', '名称', 'text'], ['hp', '当前生命', 'number'], ['maxHp', '最大生命', 'number'],
       ['atk', '攻击力', 'number'], ['def', '防御力', 'number'], ['attackInterval', '攻击间隔（秒）', 'number'],
     ];
     const ruleFields = [['timeStep', '时间步（秒）'], ['maxTime', '最大时长（秒）'], ['seed', '随机种子']];
-    let config = createBasicDuelPreset();
+    const storedConfig = loadBattleConfig(window.localStorage);
+    let config = storedConfig && validateConfig(storedConfig).valid ? migrateConfig(storedConfig) : createBasicDuelPreset();
     let lastResult = null;
     let activeFilter = 'all';
     let selectedEventIndexes = new Set();
@@ -275,6 +279,12 @@
       try { lastResult = runBattle(config); selectedEventIndexes = new Set(); renderSummary(lastResult); renderEvents(); document.querySelector('#runState').textContent = `已完成，使用种子 ${lastResult.seed}`; }
       catch (error) { showErrors(error instanceof ConfigError ? error.errors : [{ path: '', message: error.message }]); document.querySelector('#runState').textContent = '运行失败'; }
     }
+    function saveConfig() {
+      const next = readForm(); const validation = validateConfig(next); showErrors(validation.errors);
+      if (!validation.valid) { document.querySelector('#runState').textContent = '请先修正配置错误'; return; }
+      config = next;
+      document.querySelector('#runState').textContent = saveBattleConfig(window.localStorage, config) ? '已保存，可前往角色配置挂载技能' : '保存失败，请使用导出 JSON 备份';
+    }
     function exportConfig() { const blob = new Blob([JSON.stringify(migrateConfig(readForm()), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'battle-config.json'; link.click(); URL.revokeObjectURL(url); }
     async function importConfig(file) { try { const parsed = JSON.parse(await file.text()); const validation = validateConfig(parsed); showErrors(validation.errors); if (!validation.valid) return; config = migrateConfig(parsed); lastResult = null; selectedEventIndexes = new Set(); renderForm(); document.querySelector('#runState').textContent = '已导入配置，等待运行'; } catch (error) { showErrors([{ path: '导入文件', message: `无法读取 JSON：${error.message}` }]); } }
 
@@ -311,6 +321,7 @@
     renderForm();
     document.querySelector('#runButton').addEventListener('click', run);
     document.querySelector('#resetButton').addEventListener('click', () => { config = createBasicDuelPreset(); lastResult = null; selectedEventIndexes = new Set(); renderForm(); document.querySelector('#runState').textContent = '已恢复基础模板'; });
+    document.querySelector('#saveButton').addEventListener('click', saveConfig);
     document.querySelector('#exportButton').addEventListener('click', exportConfig);
     document.querySelector('#importFile').addEventListener('change', event => { if (event.target.files[0]) importConfig(event.target.files[0]); event.target.value = ''; });
     document.querySelector('#configTabs').addEventListener('click', event => { const button = event.target.closest('[data-tab]'); if (!button) return; activeTab = button.dataset.tab; document.querySelectorAll('#configTabs [data-tab]').forEach(item => item.setAttribute('aria-selected', String(item === button))); renderActiveTab(); });
