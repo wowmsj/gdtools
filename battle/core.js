@@ -64,6 +64,7 @@ function validateConfig(config) {
       else attributeIds.add(attribute.id);
       if (typeof attribute?.name !== 'string' || !attribute.name.trim()) addError(`${path}.name`, '属性名称不能为空');
       if (attribute?.type !== 'number') addError(`${path}.type`, '目前只支持数值属性');
+      if (!['absolute', 'percent'].includes(attribute?.format)) addError(`${path}.format`, '属性单位必须是 absolute 或 percent');
       if (!finite(attribute?.defaultValue)) addError(`${path}.defaultValue`, '默认值必须是有限数字');
     });
     for (const id of SYSTEM_ATTRIBUTE_IDS) if (!attributeIds.has(id)) addError('attributes', `缺少系统属性 ${id}`);
@@ -156,7 +157,7 @@ function migrateConfig(config) {
   if (!config || typeof config !== 'object') return config;
   const migrated = structuredClone(config);
   if (migrated.version === 1) migrated.version = CONFIG_VERSION;
-  for (const attribute of migrated.attributes ?? []) attribute.defaultValue ??= 0;
+  for (const attribute of migrated.attributes ?? []) { attribute.defaultValue ??= 0; attribute.format ??= 'absolute'; }
   migrated.formulas ??= {};
   for (const skill of Object.values(migrated?.skills ?? {})) skill.trigger ??= { type: 'attack' };
   return migrated;

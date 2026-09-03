@@ -34,6 +34,13 @@ migratedLegacy.version = 1;
 delete migratedLegacy.attributes[0].defaultValue;
 assert.equal(migrateConfig(migratedLegacy).version, 2);
 assert.equal(migrateConfig(migratedLegacy).attributes[0].defaultValue, 0);
+assert.equal(migrateConfig(migratedLegacy).attributes[0].format, 'absolute');
+
+const invalidAttributeFormat = createBasicDuelPreset();
+invalidAttributeFormat.attributes[2].format = 'ratio';
+assert.deepEqual(validateConfig(invalidAttributeFormat).errors, [
+  { path: 'attributes.2.format', message: '属性单位必须是 absolute 或 percent' },
+]);
 
 const duplicateAttribute = createBasicDuelPreset();
 duplicateAttribute.attributes.push({ id: 'atk', name: '重复攻击', type: 'number', defaultValue: 0 });
