@@ -4,7 +4,8 @@ const { activateAdvancedPanel, advancedSections, buildEqualCards, getSimpleCardC
 
 const html = fs.readFileSync(require.resolve('../templates/full.html'), 'utf8');
 assert.match(html, /data-scheme-workspace/);
-assert.match(html, /scheme-workspace\.js/);
+assert.match(html, /scheme-workspace\.js\?v=20260904-3/);
+assert.match(html, /advanced-console\.js\?v=20260904-3/);
 assert.match(html, /data-advanced-section="rarities"/);
 assert.match(html, /id="rarityManagerList"/);
 assert.doesNotMatch(html, /<h5>大保底稀有度概率<\/h5>[\s\S]{0,900}id="newRarityInput"/);
