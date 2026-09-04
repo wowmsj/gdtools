@@ -31,6 +31,8 @@ assert.match(html, /showcase-analysis is-loading/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /runQuickAnalysis/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickExpected/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickAnalysisStatus/);
+const consoleScript = require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8');
+assert.ok(consoleScript.indexOf("analysis?.classList.remove('is-loading')") < consoleScript.indexOf('showcaseCharts.forEach'), 'analysis metrics must be visible before charts render');
 
 const onloadStart = html.indexOf('window.onload = function()');
 const configInit = html.indexOf('initConfigTables();', onloadStart);

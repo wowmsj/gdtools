@@ -117,6 +117,8 @@
     doc.querySelector('#quickActualRuns').textContent = count.toLocaleString();
     doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} 抽` : '未获取';
     doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
+    analysis?.classList.remove('is-loading');
+    if (status) status.textContent = '真实统计已生成，正在绘制图表。';
     if (typeof Chart === 'undefined') {
       if (status) status.textContent = '统计已生成，但图表组件未加载；请刷新页面后重试。';
       return;
@@ -128,7 +130,6 @@
       ['showcaseTargetChart', { type: 'bar', data: { labels: [`1-${bucketSize}`, `${bucketSize + 1}-${bucketSize * 2}`, `${bucketSize * 2 + 1}-${bucketSize * 3}`, `${bucketSize * 3 + 1}-${maxDraws}`, '未获取'], datasets: [{ data: buckets, backgroundColor: [gold, 'rgba(104,177,255,.7)', 'rgba(74,222,128,.7)', 'rgba(248,113,113,.7)', 'rgba(153,162,184,.55)'], borderRadius: 4 }] }, options: baseOptions }]
     ];
     showcaseCharts = configs.map(([id, chartConfig]) => new Chart(doc.getElementById(id), chartConfig));
-    analysis?.classList.remove('is-loading');
     if (status) status.textContent = '当前数据已基于快捷配置完成真实模拟。';
   }
 
