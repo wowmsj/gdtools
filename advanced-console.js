@@ -72,6 +72,37 @@
 
   let showcaseCharts = [];
 
+  function renderQuickRoundStats(doc, config, rounds, drawCount) {
+    const root = doc.querySelector('#quickRoundStats');
+    const batch = window.GachaBatchAnalysis;
+    if (!root || !batch) return;
+    const highestRarity = config.rarity_order[0];
+    const roundsData = Array.from({ length: rounds }, (_, index) => {
+      const part = batch.simulateOneRoundAggregated(config, drawCount);
+      const draws = part.topDraws.length ? batch.computeQuartiles(part.topDraws) : null;
+      return {
+        round: index + 1,
+        totalDraws: drawCount,
+        rarityCounts: part.rarityCounts,
+        topCount: part.topCount,
+        topRate: drawCount ? part.topCount / drawCount : 0,
+        avgTopDraw: part.topCount ? part.topDrawSum / part.topCount : null,
+        topDrawP25: draws?.p25 ?? null,
+        topDrawP50: draws?.p50 ?? null,
+        topDrawP75: draws?.p75 ?? null,
+        pity: part.pity,
+        smallPity: part.smallPity
+      };
+    });
+    const metrics = batch.buildRoundMetrics({ highestRarity, rarityOrder: config.rarity_order });
+    let html = `<h6>默认配置，共 ${rounds} 轮 × 每轮 ${drawCount} 抽</h6><table class="table table-sm table-striped table-bordered"><thead><tr><th>指标</th><th>最小值</th><th>P25</th><th>中位数(P50)</th><th>P75</th><th>最大值</th><th>平均值</th></tr></thead><tbody>`;
+    metrics.forEach(metric => {
+      const quartiles = batch.computeQuartiles(roundsData.map(metric.get));
+      if (quartiles) html += `<tr><td>${metric.name}</td><td>${metric.fmt(quartiles.min)}</td><td>${metric.fmt(quartiles.p25)}</td><td>${metric.fmt(quartiles.p50)}</td><td>${metric.fmt(quartiles.p75)}</td><td>${metric.fmt(quartiles.max)}</td><td>${metric.fmt(quartiles.mean)}</td></tr>`;
+    });
+    root.innerHTML = `${html}</tbody></table>`;
+  }
+
   function initShowcaseCharts(doc = document) {
     const button = doc.querySelector('[data-quick-analysis-run]');
     if (!button || button.dataset.ready) return;
@@ -114,6 +145,7 @@
     const buckets = Array(5).fill(0);
     firstDraws.forEach(draw => { buckets[Math.min(3, Math.floor((draw - 1) / bucketSize))] += 1; });
     buckets[4] = count - firstDraws.length;
+    renderQuickRoundStats(doc, config, count, maxDraws);
     doc.querySelector('#quickActualRuns').textContent = count.toLocaleString();
     doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} 抽` : '未获取';
     doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
