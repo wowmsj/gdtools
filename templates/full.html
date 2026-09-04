@@ -289,6 +289,8 @@
         .showcase-quick-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)) auto; gap:10px; align-items:end; padding:18px 0; border-top:1px solid var(--line); }
         .showcase-quick-controls label { display:block; margin-bottom:5px; font-size:12px; }
         .showcase-analysis { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; padding-top:20px; }
+        .showcase-analysis.is-loading { position:relative; min-height:220px; }
+        .showcase-analysis.is-loading::before { content:'正在生成真实模拟数据...'; position:absolute; inset:20px 0 0; z-index:1; display:grid; place-items:center; color:var(--gold); background:rgba(10,13,24,.76); border:1px solid var(--line); border-radius:10px; }
         .showcase-chart { min-width:0; }
         .showcase-chart h6 { margin:0 0 3px; color:var(--text); font-size:14px; font-weight:700; }
         .showcase-chart small { color:var(--muted); }
@@ -529,11 +531,12 @@
                             <button class="btn btn-primary" type="button" data-quick-analysis-run>运行快速分析</button>
                         </div>
                         <div class="showcase-sample-metrics">
-                            <span>实际模拟次数<strong id="quickActualRuns">-</strong></span>
-                            <span>目标获取期望<strong id="quickExpected">-</strong></span>
-                            <span>上限内获取率<strong id="quickSuccess">-</strong></span>
+                            <span>实际模拟次数<strong id="quickActualRuns">计算中...</strong></span>
+                            <span>目标获取期望<strong id="quickExpected">计算中...</strong></span>
+                            <span>上限内获取率<strong id="quickSuccess">计算中...</strong></span>
                         </div>
-                        <div class="showcase-analysis" aria-label="抽卡模拟示例分析图表">
+                        <p id="quickAnalysisStatus" class="help-text mt-3 mb-0" role="status">正在生成真实模拟数据...</p>
+                        <div class="showcase-analysis is-loading" aria-label="抽卡模拟示例分析图表">
                             <section class="showcase-chart"><h6>目标稀有度概率曲线</h6><small>当前配置计算结果，单位：%</small><canvas id="showcasePityChart" aria-label="目标稀有度概率曲线"></canvas></section>
                             <section class="showcase-chart"><h6>n 次 n 抽结果区间</h6><small>真实独立模拟结果，单位：抽</small><canvas id="showcaseDistributionChart" aria-label="多轮抽卡结果区间"></canvas></section>
                             <section class="showcase-chart"><h6>目标获取抽数分布</h6><small>当前快捷模拟的统计结果</small><canvas id="showcaseTargetChart" aria-label="目标获取抽数分布"></canvas></section>
@@ -6028,19 +6031,18 @@
         }
 
         window.onload = function() {
-            window.GachaAdvancedConsole?.initAdvancedConsole();
             initConfigTables();
             updateRunRangeOptions();
             updateDeleteRaritySelector();
             updateAutoCalculateSelector();
             resetBudgetDist();
-            loadSchemes();
             buildTargetSelectionTree();
             updateSmallPityRarityCheckboxes();
             const urCb = document.getElementById('small_pity_ur');
             const ssrCb = document.getElementById('small_pity_ssr');
             if (urCb) urCb.checked = true;
             if (ssrCb) ssrCb.checked = true;
+            window.GachaAdvancedConsole?.initAdvancedConsole();
         };
 
         // 保存配置方案

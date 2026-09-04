@@ -26,8 +26,16 @@ assert.match(html, /id="quickPityThreshold"/);
 assert.match(html, /目标获取期望/);
 assert.match(html, /id="quickExpected"/);
 assert.match(html, /data-quick-analysis-run/);
+assert.match(html, /id="quickAnalysisStatus"/);
+assert.match(html, /showcase-analysis is-loading/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /runQuickAnalysis/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickExpected/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickAnalysisStatus/);
+
+const onloadStart = html.indexOf('window.onload = function()');
+const configInit = html.indexOf('initConfigTables();', onloadStart);
+const consoleInit = html.indexOf('window.GachaAdvancedConsole?.initAdvancedConsole();', onloadStart);
+assert.ok(configInit > onloadStart && configInit < consoleInit, 'default configuration must exist before quick analysis starts');
 
 assert.deepEqual(advancedSections.map(section => section.id), ['schemes', 'rarities', 'pity', 'curve', 'pools', 'cards']);
 

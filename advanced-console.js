@@ -81,7 +81,14 @@
   }
 
   function runQuickAnalysis(doc = document) {
-    if (typeof Chart === 'undefined' || !window.GachaSimulator || !window.parseConfig) return;
+    const status = doc.querySelector('#quickAnalysisStatus');
+    const analysis = doc.querySelector('.showcase-analysis');
+    if (!window.GachaSimulator || !window.parseConfig) {
+      if (status) status.textContent = '模拟器初始化失败，请刷新页面后重试。';
+      return;
+    }
+    if (status) status.textContent = '正在生成真实模拟数据...';
+    analysis?.classList.add('is-loading');
     const count = Math.max(1, Math.min(5000, Number(doc.querySelector('#quickSimulationCount').value) || 1000));
     const maxDraws = Math.max(1, Math.min(1000, Number(doc.querySelector('#quickMaxDraws').value) || 90));
     const pity = Math.max(1, Math.min(1000, Number(doc.querySelector('#quickPityThreshold').value) || 90));
@@ -107,6 +114,13 @@
     const buckets = Array(5).fill(0);
     firstDraws.forEach(draw => { buckets[Math.min(3, Math.floor((draw - 1) / bucketSize))] += 1; });
     buckets[4] = count - firstDraws.length;
+    doc.querySelector('#quickActualRuns').textContent = count.toLocaleString();
+    doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} 抽` : '未获取';
+    doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
+    if (typeof Chart === 'undefined') {
+      if (status) status.textContent = '统计已生成，但图表组件未加载；请刷新页面后重试。';
+      return;
+    }
     showcaseCharts.forEach(chart => chart.destroy());
     const configs = [
       ['showcasePityChart', { type: 'line', data: { labels: points.map(String), datasets: [{ data: probability, borderColor: gold, backgroundColor: 'rgba(231,195,122,.16)', fill: true, tension: .35, pointRadius: 2 }] }, options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 100 } } } }],
@@ -114,9 +128,8 @@
       ['showcaseTargetChart', { type: 'bar', data: { labels: [`1-${bucketSize}`, `${bucketSize + 1}-${bucketSize * 2}`, `${bucketSize * 2 + 1}-${bucketSize * 3}`, `${bucketSize * 3 + 1}-${maxDraws}`, '未获取'], datasets: [{ data: buckets, backgroundColor: [gold, 'rgba(104,177,255,.7)', 'rgba(74,222,128,.7)', 'rgba(248,113,113,.7)', 'rgba(153,162,184,.55)'], borderRadius: 4 }] }, options: baseOptions }]
     ];
     showcaseCharts = configs.map(([id, chartConfig]) => new Chart(doc.getElementById(id), chartConfig));
-    doc.querySelector('#quickActualRuns').textContent = count.toLocaleString();
-    doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} 抽` : '未获取';
-    doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
+    analysis?.classList.remove('is-loading');
+    if (status) status.textContent = '当前数据已基于快捷配置完成真实模拟。';
   }
 
   function initRarityManager(doc = document) {
