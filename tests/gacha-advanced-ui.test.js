@@ -25,6 +25,7 @@ assert.match(html, /运行结果使用当前配置/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /initShowcaseCharts/);
 assert.match(html, /id="quickSimulationCount"/);
 assert.match(html, /id="quickMaxDraws"/);
+assert.match(html, /每轮抽数<input class="form-control" id="quickMaxDraws"/);
 assert.match(html, /id="quickPityThreshold"/);
 assert.match(html, /目标获取期望/);
 assert.match(html, /id="quickExpected"/);
