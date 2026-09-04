@@ -76,5 +76,10 @@ def battle_asset(filename):
 def advanced_console_script():
     return send_file('advanced-console.js', mimetype='application/javascript')
 
+
+@app.route('/scheme-workspace.js')
+def scheme_workspace_script():
+    return send_file('scheme-workspace.js', mimetype='application/javascript')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -5,6 +5,6 @@
   "description": "星轨祈愿 · 抽卡模拟器（纯前端单文件应用）",
   "scripts": {
     "dev": "node dev-server.js",
-    "test": "node tests/gacha-advanced-ui.test.js"
+    "test": "node tests/gacha-advanced-ui.test.js && node tests/scheme-workspace.test.js"
   }
 }

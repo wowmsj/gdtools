@@ -1,7 +1,35 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const { activateAdvancedPanel, advancedSections, buildEqualCards, getSimpleCardCounts } = require('../advanced-console.js');
 
-assert.deepEqual(advancedSections.map(section => section.id), ['schemes', 'pity', 'curve', 'pools', 'cards']);
+const html = fs.readFileSync(require.resolve('../templates/full.html'), 'utf8');
+assert.match(html, /data-scheme-workspace/);
+assert.match(html, /scheme-workspace\.js/);
+assert.match(html, /data-advanced-section="rarities"/);
+assert.match(html, /id="rarityManagerList"/);
+assert.doesNotMatch(html, /<h5>大保底稀有度概率<\/h5>[\s\S]{0,900}id="newRarityInput"/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /moveRarityType/);
+assert.match(html, /class="nav-link active" id="showcase-tab"/);
+assert.match(html, /class="tab-pane fade show active" id="showcase"/);
+assert.match(html, /n 次 n 抽/);
+assert.match(html, /阶梯概率/);
+assert.match(html, /Excel 导出/);
+assert.match(html, /data-open-tab="advanced-tab"/);
+assert.match(html, /id="showcasePityChart"/);
+assert.match(html, /id="showcaseDistributionChart"/);
+assert.match(html, /id="showcaseTargetChart"/);
+assert.match(html, /运行结果使用当前配置/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /initShowcaseCharts/);
+assert.match(html, /id="quickSimulationCount"/);
+assert.match(html, /id="quickMaxDraws"/);
+assert.match(html, /id="quickPityThreshold"/);
+assert.match(html, /目标获取期望/);
+assert.match(html, /id="quickExpected"/);
+assert.match(html, /data-quick-analysis-run/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /runQuickAnalysis/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickExpected/);
+
+assert.deepEqual(advancedSections.map(section => section.id), ['schemes', 'rarities', 'pity', 'curve', 'pools', 'cards']);
 
 function panel(id) {
   const classes = new Set();
