@@ -3,6 +3,18 @@ const fs = require('node:fs');
 const { activateAdvancedPanel, advancedSections, buildEqualCards, getSimpleCardCounts } = require('../advanced-console.js');
 
 const html = fs.readFileSync(require.resolve('../templates/full.html'), 'utf8');
+const appSource = fs.readFileSync(require.resolve('../app.py'), 'utf8');
+const i18nSource = fs.readFileSync(require.resolve('../i18n.js'), 'utf8');
+assert.match(appSource, /@app\.route\('\/en'\)/);
+assert.match(html, /<html lang="{{ locale }}">/);
+assert.match(html, /window\.GachaLocale = '{{ locale }}'/);
+assert.match(i18nSource, /GachaI18n/);
+assert.match(i18nSource, /Universal Gacha Simulator/);
+assert.match(i18nSource, /Quick Analysis/);
+assert.match(i18nSource, /Draws per Round/);
+assert.match(i18nSource, /Scheme Workspace/);
+assert.match(html, /i18n\.js/);
+assert.match(html, /gacha-simulation-result\.xlsx/);
 assert.match(html, /data-scheme-workspace/);
 assert.match(html, /scheme-workspace\.js\?v=20260904-4/);
 assert.match(html, /advanced-console\.js\?v=20260904-4/);

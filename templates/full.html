@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ locale }}">
 <head>
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JXF74WY7R4"></script>
     <script>
+        window.GachaLocale = '{{ locale }}';
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
@@ -87,6 +88,8 @@
             text-shadow: 0 0 42px rgba(231, 195, 122, 0.18);
         }
         .hero-subtitle { color: var(--muted); font-size: 14px; letter-spacing: 0.14em; margin: 0; }
+        .hero-language { display: inline-block; margin-top: 14px; color: var(--gold); font-size: 13px; text-decoration: none; }
+        .hero-language:hover { color: #fff; }
         .hero::after {
             content: ''; display: block; width: 132px; height: 2px; margin: 20px auto 0;
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
@@ -489,6 +492,7 @@
             <div class="hero-eyebrow">Gacha Probability Lab</div>
             <h1 class="hero-title">万能抽卡模拟器</h1>
             <p class="hero-subtitle">概率建模 · 保底机制 · 用户行为模拟，一站式数值验证工作台</p>
+            <a class="hero-language" href="{{ '/en' if locale == 'zh-CN' else '/' }}">{{ 'English' if locale == 'zh-CN' else '中文' }}</a>
         </header>
         
         <div class="card">
@@ -4845,6 +4849,10 @@
             document.getElementById('collectionResult').style.display = 'block';
         }
 
+        function exportFileName(chineseName, englishName) {
+            return window.GachaI18n?.isEnglish?.() ? englishName : chineseName;
+        }
+
         function exportExcel() {
             if (!simulationResult) {
                 alert('请先运行模拟');
@@ -4971,7 +4979,7 @@
                     );
                 });
 
-                XLSX.writeFile(wb, '抽卡模拟结果_多配置.xlsx');
+                XLSX.writeFile(wb, exportFileName('抽卡模拟结果_多配置.xlsx', 'gacha-simulation-multi-config.xlsx'));
                 return;
             }
 
@@ -5099,7 +5107,7 @@
             const configWs = XLSX.utils.aoa_to_sheet(configData);
             XLSX.utils.book_append_sheet(wb, configWs, '配置参数');
 
-            XLSX.writeFile(wb, '抽卡模拟结果.xlsx');
+            XLSX.writeFile(wb, exportFileName('抽卡模拟结果.xlsx', 'gacha-simulation-result.xlsx'));
         }
 
         // 每抽概率曲线：按当前活动页签的配置，逐抽计算各稀有度概率并用折线图展示
@@ -5286,7 +5294,10 @@
                 html = '<div class="text-danger">⚠️ 以下区间的概率合计不为10000：</div><ul class="mb-0">';
                 badRows.forEach(row => {
                     const diff = row.sum - 10000;
-                    html += `<li>第${row.index}行（${row.start || '?'}-${row.end || '?'}抽）：合计 ${row.sum}（${diff > 0 ? '+' : ''}${diff}）</li>`;
+                    const label = window.GachaI18n?.isEnglish?.()
+                        ? `Row ${row.index} (${row.start || '?'}-${row.end || '?'} draws): total ${row.sum} (${diff > 0 ? '+' : ''}${diff})`
+                        : `第${row.index}行（${row.start || '?'}-${row.end || '?'}抽）：合计 ${row.sum}（${diff > 0 ? '+' : ''}${diff}）`;
+                    html += `<li>${label}</li>`;
                 });
                 html += '</ul>';
             }
@@ -5403,7 +5414,7 @@
             // 分轮模式：导出四分位汇总 + 每轮明细
             if (drawResult.roundsResult) {
                 exportRoundsResultSheets(wb, drawResult.roundsResult);
-                XLSX.writeFile(wb, '分轮抽卡统计.xlsx');
+                XLSX.writeFile(wb, exportFileName('分轮抽卡统计.xlsx', 'round-draw-statistics.xlsx'));
                 return;
             }
 
@@ -5476,7 +5487,7 @@
                     );
                 });
 
-                XLSX.writeFile(wb, '抽卡结果_多配置.xlsx');
+                XLSX.writeFile(wb, exportFileName('抽卡结果_多配置.xlsx', 'draw-results-multi-config.xlsx'));
             } else {
                 // 导出单个页签的结果
                 const results = drawResult.results;
@@ -5557,7 +5568,7 @@
                 const configWs = XLSX.utils.aoa_to_sheet(configData);
                 XLSX.utils.book_append_sheet(wb, configWs, '配置参数');
 
-                XLSX.writeFile(wb, '抽卡结果.xlsx');
+                XLSX.writeFile(wb, exportFileName('抽卡结果.xlsx', 'draw-results.xlsx'));
             }
         }
 
@@ -5702,7 +5713,7 @@
                     }
                 });
 
-                XLSX.writeFile(wb, '收集模拟结果_多配置.xlsx');
+                XLSX.writeFile(wb, exportFileName('收集模拟结果_多配置.xlsx', 'collection-results-multi-config.xlsx'));
                 return;
             }
 
@@ -5836,7 +5847,7 @@
             const configWs = XLSX.utils.aoa_to_sheet(configData);
             XLSX.utils.book_append_sheet(wb, configWs, '配置参数');
 
-            XLSX.writeFile(wb, '收集模拟结果.xlsx');
+            XLSX.writeFile(wb, exportFileName('收集模拟结果.xlsx', 'collection-results.xlsx'));
         }
 
         // 构建目标选择层级树
@@ -6623,6 +6634,7 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="i18n.js?v=20260905-6"></script>
     <script src="scheme-workspace.js?v=20260904-4"></script>
     <script src="advanced-console.js?v=20260904-4"></script>
 </body>

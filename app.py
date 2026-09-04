@@ -37,7 +37,12 @@ def index():
             target_rarity=target_rarity,
         )
     
-    return render_template('full.html')
+    return render_template('full.html', locale='zh-CN')
+
+
+@app.route('/en')
+def english_index():
+    return render_template('full.html', locale='en')
 
 @app.route('/export_excel', methods=['POST'])
 def export_excel():
@@ -80,6 +85,11 @@ def advanced_console_script():
 @app.route('/scheme-workspace.js')
 def scheme_workspace_script():
     return send_file('scheme-workspace.js', mimetype='application/javascript')
+
+
+@app.route('/i18n.js')
+def i18n_script():
+    return send_file('i18n.js', mimetype='application/javascript')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

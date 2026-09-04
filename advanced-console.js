@@ -1,4 +1,5 @@
 (() => {
+  const t = (key, fallback) => window.GachaI18n?.t(key, fallback) || fallback || key;
   const advancedSections = [
     { id: 'schemes', label: '方案管理', hint: '保存、读取与应用配置' },
     { id: 'rarities', label: '稀有度定义', hint: '新增、删除与优先级排序' },
@@ -95,7 +96,7 @@
       };
     });
     const metrics = batch.buildRoundMetrics({ highestRarity, rarityOrder: config.rarity_order });
-    let html = `<h6>默认配置，共 ${rounds} 轮 × 每轮 ${drawCount} 抽</h6><table class="table table-sm table-striped table-bordered"><thead><tr><th>指标</th><th>最小值</th><th>P25</th><th>中位数(P50)</th><th>P75</th><th>最大值</th><th>平均值</th></tr></thead><tbody>`;
+    let html = `<h6>${t('默认配置')} · ${rounds} ${t('轮', 'rounds')} × ${t('每轮', 'per round')} ${drawCount} ${t('抽数', 'draws')}</h6><table class="table table-sm table-striped table-bordered"><thead><tr><th>${t('指标')}</th><th>${t('最小值')}</th><th>P25</th><th>${t('中位数(P50)')}</th><th>P75</th><th>${t('最大值')}</th><th>${t('平均值')}</th></tr></thead><tbody>`;
     metrics.forEach(metric => {
       const quartiles = batch.computeQuartiles(roundsData.map(metric.get));
       if (quartiles) html += `<tr><td>${metric.name}</td><td>${metric.fmt(quartiles.min)}</td><td>${metric.fmt(quartiles.p25)}</td><td>${metric.fmt(quartiles.p50)}</td><td>${metric.fmt(quartiles.p75)}</td><td>${metric.fmt(quartiles.max)}</td><td>${metric.fmt(quartiles.mean)}</td></tr>`;
@@ -147,7 +148,7 @@
     buckets[4] = count - firstDraws.length;
     renderQuickRoundStats(doc, config, count, maxDraws);
     doc.querySelector('#quickActualRuns').textContent = count.toLocaleString();
-    doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} 抽` : '未获取';
+    doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} ${t('抽数', 'draws')}` : t('未获取', 'Not acquired');
     doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
     analysis?.classList.remove('is-loading');
     if (status) status.textContent = '真实统计已生成，正在绘制图表。';
