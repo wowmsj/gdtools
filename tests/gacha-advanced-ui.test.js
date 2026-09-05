@@ -5,6 +5,8 @@ const { activateAdvancedPanel, advancedSections, buildEqualCards, getSimpleCardC
 const html = fs.readFileSync(require.resolve('../templates/full.html'), 'utf8');
 const appSource = fs.readFileSync(require.resolve('../app.py'), 'utf8');
 const i18nSource = fs.readFileSync(require.resolve('../i18n.js'), 'utf8');
+assert.match(appSource, /@app\.route\('\/health'\)/);
+assert.match(appSource, /return 'ok', 200/);
 assert.match(appSource, /@app\.route\('\/en'\)/);
 assert.match(html, /<html lang="{{ locale }}">/);
 assert.match(html, /window\.GachaLocale = '{{ locale }}'/);

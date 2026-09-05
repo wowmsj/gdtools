@@ -5,6 +5,11 @@ from web_helpers import build_core_stats, build_distribution_rows, build_excel_f
 app = Flask(__name__)
 
 
+@app.route('/health')
+def health():
+    return 'ok', 200
+
+
 def run_simulation(user_num, target_rarity, second_ratio, budget_dist):
     gacha = GachaSimulator()
     budget_distribution = gacha._parse_budget_distribution(budget_dist) if budget_dist.strip() else None
