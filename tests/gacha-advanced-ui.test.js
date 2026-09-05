@@ -15,6 +15,8 @@ assert.match(i18nSource, /Universal Gacha Simulator/);
 assert.match(i18nSource, /Quick Analysis/);
 assert.match(i18nSource, /Draws per Round/);
 assert.match(i18nSource, /Scheme Workspace/);
+assert.match(i18nSource, /navigator\.language/);
+assert.match(i18nSource, /gachaLocalePreference/);
 assert.match(html, /i18n\.js/);
 assert.match(html, /gacha-simulation-result\.xlsx/);
 assert.match(html, /data-scheme-workspace/);

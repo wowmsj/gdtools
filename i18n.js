@@ -1,4 +1,13 @@
 (function () {
+  const preferenceKey = 'gachaLocalePreference';
+  const preferredLocale = localStorage.getItem(preferenceKey);
+  const browserLanguage = (navigator.language || '').toLowerCase();
+
+  if (window.location.pathname === '/' && preferredLocale !== 'zh' && preferredLocale !== 'en' && !browserLanguage.startsWith('zh')) {
+    window.location.replace('/en');
+    return;
+  }
+
   const english = {
     '万能抽卡模拟器': 'Universal Gacha Simulator',
     '概率建模 · 保底机制 · 用户行为模拟，一站式数值验证工作台': 'Probability modeling, pity systems, and player behavior simulation in one validation workspace.',
@@ -264,6 +273,12 @@
     localize: localizeNode,
     isEnglish: () => window.GachaLocale === 'en'
   };
+
+  document.querySelectorAll('.hero-language').forEach(link => {
+    link.addEventListener('click', () => {
+      localStorage.setItem(preferenceKey, link.pathname === '/en' ? 'en' : 'zh');
+    });
+  });
 
   if (window.GachaLocale === 'en') {
     document.title = translate(document.title);
