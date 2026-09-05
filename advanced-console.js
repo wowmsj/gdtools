@@ -108,11 +108,11 @@
     const button = doc.querySelector('[data-quick-analysis-run]');
     if (!button || button.dataset.ready) return;
     button.dataset.ready = 'true';
-    button.addEventListener('click', () => runQuickAnalysis(doc));
+    button.addEventListener('click', () => runQuickAnalysis(doc, 'quick_analysis'));
     runQuickAnalysis(doc);
   }
 
-  function runQuickAnalysis(doc = document) {
+  function runQuickAnalysis(doc = document, action = '') {
     const status = doc.querySelector('#quickAnalysisStatus');
     const analysis = doc.querySelector('.showcase-analysis');
     if (!window.GachaSimulator || !window.parseConfig) {
@@ -151,6 +151,7 @@
     doc.querySelector('#quickExpected').textContent = sorted.length ? `${expected.toFixed(1)} ${t('抽数', 'draws')}` : t('未获取', 'Not acquired');
     doc.querySelector('#quickSuccess').textContent = `${((firstDraws.length / count) * 100).toFixed(1)}%`;
     analysis?.classList.remove('is-loading');
+    if (action) window.trackGachaEvent?.('gacha_simulation_run', action);
     if (status) status.textContent = '真实统计已生成，正在绘制图表。';
     if (typeof Chart === 'undefined') {
       if (status) status.textContent = '统计已生成，但图表组件未加载；请刷新页面后重试。';
@@ -291,6 +292,7 @@
       activeName = name;
       setDirty(false);
       setNotice(`「${name}」已保存到当前浏览器。`);
+      window.trackGachaEvent?.('gacha_scheme_saved', 'save');
       render();
     };
     root.addEventListener('click', event => {
@@ -299,7 +301,7 @@
       if (action === 'new') { if (!dirty || confirm('当前修改尚未保存，确定新建方案吗？')) { activeName = ''; nameInput.value = ''; setDirty(true); setNotice('已创建未命名方案，请填写名称后保存。'); render(); } }
       if (action === 'save') save();
       if (action === 'copy' && activeName) { const result = store.copyScheme(read(), activeName); write(result.schemes); activeName = result.name; nameInput.value = result.name; setDirty(false); setNotice(`已创建副本「${result.name}」。`); render(); }
-      if (action === 'apply') { window.applyConfigToSimulator(capture()); setNotice('当前编辑器配置已应用到模拟器。'); }
+      if (action === 'apply') { window.applyConfigToSimulator(capture()); window.trackGachaEvent?.('gacha_config_applied', 'apply'); setNotice('当前编辑器配置已应用到模拟器。'); }
       if (action === 'delete' && activeName && confirm(`确定删除方案「${activeName}」吗？`)) { write(store.deleteScheme(read(), activeName)); activeName = ''; nameInput.value = ''; setDirty(false); setNotice('方案已删除，编辑器配置未改变。'); render(); }
     });
     doc.querySelector('#advanced').addEventListener('input', event => { if (!root.contains(event.target)) setDirty(true); }, true);

@@ -5,6 +5,7 @@ const { activateAdvancedPanel, advancedSections, buildEqualCards, getSimpleCardC
 const html = fs.readFileSync(require.resolve('../templates/full.html'), 'utf8');
 const appSource = fs.readFileSync(require.resolve('../app.py'), 'utf8');
 const i18nSource = fs.readFileSync(require.resolve('../i18n.js'), 'utf8');
+const battleSource = fs.readFileSync(require.resolve('../battle/battle.html'), 'utf8');
 assert.match(appSource, /@app\.route\('\/health'\)/);
 assert.match(appSource, /return 'ok', 200/);
 assert.match(appSource, /@app\.route\('\/en'\)/);
@@ -17,7 +18,13 @@ assert.match(i18nSource, /Draws per Round/);
 assert.match(i18nSource, /Scheme Workspace/);
 assert.match(i18nSource, /navigator\.language/);
 assert.match(i18nSource, /gachaLocalePreference/);
+assert.match(i18nSource, /language_selected/);
 assert.match(html, /i18n\.js/);
+assert.match(html, /function trackGachaEvent\(/);
+assert.match(html, /gacha_simulation_run/);
+assert.match(battleSource, /battle_simulation_run/);
+assert.match(html, /gacha_config_applied/);
+assert.match(html, /gacha_scheme_saved/);
 assert.match(html, /gacha-simulation-result\.xlsx/);
 assert.match(html, /data-scheme-workspace/);
 assert.match(html, /scheme-workspace\.js\?v=20260904-4/);
@@ -52,6 +59,9 @@ assert.match(require('node:fs').readFileSync(require.resolve('../advanced-consol
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /renderQuickRoundStats/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickExpected/);
 assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /quickAnalysisStatus/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /trackGachaEvent\?\.\('gacha_simulation_run'/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /trackGachaEvent\?\.\('gacha_scheme_saved'/);
+assert.match(require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8'), /trackGachaEvent\?\.\('gacha_config_applied'/);
 const consoleScript = require('node:fs').readFileSync(require.resolve('../advanced-console.js'), 'utf8');
 assert.ok(consoleScript.indexOf("analysis?.classList.remove('is-loading')") < consoleScript.indexOf('showcaseCharts.forEach'), 'analysis metrics must be visible before charts render');
 

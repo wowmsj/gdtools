@@ -9,6 +9,10 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-JXF74WY7R4');
+        function trackGachaEvent(name, action) {
+            if (typeof window.gtag === 'function') gtag('event', name, { tool: 'gacha', action, locale: window.GachaLocale || 'zh-CN' });
+        }
+        window.trackGachaEvent = trackGachaEvent;
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3606,6 +3610,7 @@
                     displayAllRealUserResults(allResults);
                 }
                 document.getElementById('exportBtn').disabled = false;
+                window.trackGachaEvent('gacha_simulation_run', 'real_user');
 
             } catch (error) {
                 alert('错误：' + error.message);
@@ -3670,6 +3675,7 @@
                     }
                     await runBatchRounds(batchCount, batchRounds, selections, allocations);
                     document.getElementById('drawExportBtn').disabled = false;
+                    window.trackGachaEvent('gacha_simulation_run', 'batch_draw');
                     return;
                 }
                 {
@@ -3728,6 +3734,7 @@
                 }
                 
                 document.getElementById('drawExportBtn').disabled = false;
+                window.trackGachaEvent('gacha_simulation_run', drawType === 'single' ? 'single_draw' : 'batch_draw');
 
             } catch (error) {
                 alert('错误：' + error.message);
@@ -4280,6 +4287,7 @@
                 }
                 
                 document.getElementById('collectionExportBtn').disabled = false;
+                window.trackGachaEvent('gacha_simulation_run', 'collection');
 
             } catch (error) {
                 alert('错误：' + error.message);
@@ -6128,6 +6136,7 @@
                 const schemes = getSchemes();
                 schemes[schemeName] = mainConfig;
                 localStorage.setItem('gachaSchemes', JSON.stringify(schemes));
+                window.trackGachaEvent('gacha_scheme_saved', 'save');
                 
                 // 更新方案选择器
                 loadSchemes();
@@ -6424,6 +6433,7 @@
                 
                 // 确保gacha实例使用最新配置
                 gacha = new GachaSimulator(config);
+                window.trackGachaEvent('gacha_config_applied', 'apply');
             } catch (error) {
                 alert('应用方案失败：' + error.message);
             }

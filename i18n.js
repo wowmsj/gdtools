@@ -277,6 +277,7 @@
   document.querySelectorAll('.hero-language').forEach(link => {
     link.addEventListener('click', () => {
       localStorage.setItem(preferenceKey, link.pathname === '/en' ? 'en' : 'zh');
+      window.trackGachaEvent?.('language_selected', 'switch');
     });
   });
 
