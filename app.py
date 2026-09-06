@@ -96,5 +96,10 @@ def scheme_workspace_script():
 def i18n_script():
     return send_file('i18n.js', mimetype='application/javascript')
 
+
+@app.route('/showcase-cache.js')
+def showcase_cache_script():
+    return send_file('showcase-cache.js', mimetype='application/javascript')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

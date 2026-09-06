@@ -109,7 +109,34 @@
     if (!button || button.dataset.ready) return;
     button.dataset.ready = 'true';
     button.addEventListener('click', () => runQuickAnalysis(doc, 'quick_analysis'));
-    runQuickAnalysis(doc);
+    if (window.GachaShowcaseCache) renderCachedQuickAnalysis(doc, window.GachaShowcaseCache);
+    else runQuickAnalysis(doc);
+  }
+
+  function renderCachedQuickAnalysis(doc, cache) {
+    const status = doc.querySelector('#quickAnalysisStatus');
+    const analysis = doc.querySelector('.showcase-analysis');
+    const colors = getComputedStyle(doc.documentElement);
+    const gold = colors.getPropertyValue('--gold').trim();
+    const muted = colors.getPropertyValue('--muted').trim();
+    const line = colors.getPropertyValue('--line').trim();
+    const baseOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: muted, font: { size: 10 } }, grid: { color: line } }, y: { ticks: { color: muted, font: { size: 10 } }, grid: { color: line } } } };
+    const root = doc.querySelector('#quickRoundStats');
+    let html = `<h6>${t('默认配置')} · ${cache.actualRuns} ${t('轮', 'rounds')} × ${t('每轮', 'per round')} 90 ${t('抽数', 'draws')}</h6><table class="table table-sm table-striped table-bordered"><thead><tr><th>${t('指标')}</th><th>${t('最小值')}</th><th>P25</th><th>${t('中位数(P50)')}</th><th>P75</th><th>${t('最大值')}</th><th>${t('平均值')}</th></tr></thead><tbody>`;
+    cache.roundStats.forEach(row => { html += `<tr>${row.map(value => `<td>${value}</td>`).join('')}</tr>`; });
+    if (root) root.innerHTML = `${html}</tbody></table>`;
+    doc.querySelector('#quickActualRuns').textContent = cache.actualRuns.toLocaleString();
+    doc.querySelector('#quickExpected').textContent = `${cache.expected.toFixed(1)} ${t('抽数', 'draws')}`;
+    doc.querySelector('#quickSuccess').textContent = `${cache.success.toFixed(1)}%`;
+    analysis?.classList.remove('is-loading');
+    if (typeof Chart === 'undefined') { if (status) status.textContent = '默认统计快照已加载。'; return; }
+    showcaseCharts.forEach(chart => chart.destroy());
+    showcaseCharts = [
+      new Chart(doc.getElementById('showcasePityChart'), { type: 'line', data: { labels: cache.points.map(String), datasets: [{ data: cache.probability, borderColor: gold, backgroundColor: 'rgba(231,195,122,.16)', fill: true, tension: .35, pointRadius: 2 }] }, options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 100 } } } }),
+      new Chart(doc.getElementById('showcaseDistributionChart'), { type: 'bar', data: { labels: ['P25', 'P50', 'P75', '最大'], datasets: [{ data: cache.distribution, backgroundColor: ['rgba(104,177,255,.6)', gold, 'rgba(104,177,255,.6)', 'rgba(248,113,113,.65)'], borderRadius: 4 }] }, options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: true, max: 90 } } } }),
+      new Chart(doc.getElementById('showcaseTargetChart'), { type: 'bar', data: { labels: ['1-23', '24-46', '47-69', '70-90', '未获取'], datasets: [{ data: cache.buckets, backgroundColor: [gold, 'rgba(104,177,255,.7)', 'rgba(74,222,128,.7)', 'rgba(248,113,113,.7)', 'rgba(153,162,184,.55)'], borderRadius: 4 }] }, options: baseOptions })
+    ];
+    if (status) status.textContent = '当前数据已基于默认配置的真实模拟快照加载。';
   }
 
   function runQuickAnalysis(doc = document, action = '') {
